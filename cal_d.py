@@ -6,13 +6,17 @@ This is a module to calculate the risky value
 
 import openpyxl
 from openpyxl import Workbook
+
 # load a workbook -> .xlsx file
-wb = openpyxl.load_workbook("./value.xlsx")
+wb = openpyxl.load_workbook("./value.xlsx", data_only=True)
 sheet_list = wb.sheetnames
 # extract threat & vulnerability sheet
+A_SHEET = wb[sheet_list[0]]
 T_SHEET = wb[sheet_list[1]]
 V_SHEET = wb[sheet_list[2]]
 # set max row and column
+A_MAX_ROW = A_SHEET.max_row # 46
+A_MAX_COLUMN = A_SHEET.max_column # 7
 T_MAX_ROW = T_SHEET.max_row
 T_MAX_COLUMN = T_SHEET.max_column
 V_MAX_ROW = V_SHEET.max_row
@@ -20,6 +24,7 @@ V_MAX_COLUMN = V_SHEET.max_column
 
 t_list = []
 v_list = []
+asset_list = []
 t_dic = {}
 v_dic = {}
 t_flag = ""
@@ -32,6 +37,13 @@ output_wb = Workbook()
 output_sheet = output_wb.active
 output_sheet.title = "Integration"
 
+for row in A_SHEET.iter_rows(2, A_MAX_ROW, 1, A_MAX_COLUMN, values_only=True):
+    if row[0] == None:
+        del row
+    else:
+        asset_list.append((row[1], row[-1]))
+print(asset_list)
+        
 for i in range(T_MAX_ROW):
     t_name_value = T_SHEET.cell(i + 1, 3).value
     t_threat_value = T_SHEET.cell(i + 1, T_MAX_COLUMN).value
@@ -72,12 +84,9 @@ for name in t_dic:
             i_tuple = (name, t, v)
             a_list.append(i_tuple)
 
-# for i in range(11):
-    # print(a_list[i])
-
 for i in range(len(a_list)):
     output_sheet.cell(row=i+1, column=1, value=a_list[i][0])
     output_sheet.cell(row=i+1, column=2, value=a_list[i][1])
     output_sheet.cell(row=i+1, column=3, value=a_list[i][2])
 
-output_wb.save('output.xlsx')
+# output_wb.save('output.xlsx')
