@@ -25,6 +25,7 @@ V_MAX_COLUMN = V_SHEET.max_column
 t_list = []
 v_list = []
 asset_list = []
+asset_flag = 0 # to save the start number of a_list
 t_dic = {}
 v_dic = {}
 t_flag = ""
@@ -42,7 +43,6 @@ for row in A_SHEET.iter_rows(2, A_MAX_ROW, 1, A_MAX_COLUMN, values_only=True):
         del row
     else:
         asset_list.append((row[1], row[-1]))
-print(asset_list)
         
 for i in range(T_MAX_ROW):
     t_name_value = T_SHEET.cell(i + 1, 3).value
@@ -84,9 +84,19 @@ for name in t_dic:
             i_tuple = (name, t, v)
             a_list.append(i_tuple)
 
-for i in range(len(a_list)):
-    output_sheet.cell(row=i+1, column=1, value=a_list[i][0])
-    output_sheet.cell(row=i+1, column=2, value=a_list[i][1])
-    output_sheet.cell(row=i+1, column=3, value=a_list[i][2])
+# for i in range(len(a_list)):
+    # output_sheet.cell(row=i+1, column=1, value=a_list[i][0])
+    # output_sheet.cell(row=i+1, column=2, value=a_list[i][1])
+    # output_sheet.cell(row=i+1, column=3, value=a_list[i][2])
+for t in asset_list:
+    for i in range(asset_flag, len(a_list)):
+        if t[0] == a_list[i][0]:
+            output_sheet.cell(row=i+1, column=1, value=a_list[i][0])
+            output_sheet.cell(row=i+1, column=2, value=t[1])
+            output_sheet.cell(row=i+1, column=3, value=a_list[i][1])
+            output_sheet.cell(row=i+1, column=4, value=a_list[i][2])
+        else:
+            asset_flag = i
+            break
 
-# output_wb.save('output.xlsx')
+output_wb.save('output2.xlsx')
