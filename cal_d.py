@@ -6,6 +6,7 @@ This is a module to calculate the risky value
 
 import openpyxl
 from openpyxl import Workbook
+from openpyxl.styles import PatternFill, Alignment, Font
 
 # load a workbook -> .xlsx file
 wb = openpyxl.load_workbook("./value.xlsx", data_only=True)
@@ -15,8 +16,8 @@ A_SHEET = wb[sheet_list[0]]
 T_SHEET = wb[sheet_list[1]]
 V_SHEET = wb[sheet_list[2]]
 # set max row and column
-A_MAX_ROW = A_SHEET.max_row # 46
-A_MAX_COLUMN = A_SHEET.max_column # 7
+A_MAX_ROW = A_SHEET.max_row  # 46
+A_MAX_COLUMN = A_SHEET.max_column  # 7
 T_MAX_ROW = T_SHEET.max_row
 T_MAX_COLUMN = T_SHEET.max_column
 V_MAX_ROW = V_SHEET.max_row
@@ -25,7 +26,7 @@ V_MAX_COLUMN = V_SHEET.max_column
 t_list = []
 v_list = []
 asset_list = []
-asset_flag = 0 # to save the start number of a_list
+asset_flag = 0  # to save the start number of a_list
 t_dic = {}
 v_dic = {}
 t_flag = ""
@@ -38,16 +39,37 @@ output_wb = Workbook()
 output_sheet = output_wb.active
 output_sheet.title = "Integration"
 
+
+def sheet_format(sheet):
+    header = ["资产名称", "资产赋值", "威胁等级", "脆弱性赋值"]
+    sheet.column_dimensions["A"].width = 25
+    sheet.column_dimensions["B"].width = 16
+    sheet.column_dimensions["C"].width = 16
+    sheet.column_dimensions["D"].width = 16
+    sheet.row_dimensions[1].height = 20
+    sheet.insert_rows(1)
+    font = Font(bold=True)
+    fill = PatternFill(fill_type="solid",
+                       start_color="D9D9D9",
+                       end_color="D9D9D9")
+    alignment = Alignment(horizontal="center", vertical="center")
+    for i in range(4):
+        sheet.cell(1, i + 1).value = header[i]
+        sheet.cell(1, i + 1).font = font
+        sheet.cell(1, i + 1).fill = fill
+        sheet.cell(1, i + 1).alignment = alignment
+
+
 for row in A_SHEET.iter_rows(2, A_MAX_ROW, 1, A_MAX_COLUMN, values_only=True):
     if row[0] == None:
         del row
     else:
         asset_list.append((row[1], row[-1]))
-        
+
 for i in range(T_MAX_ROW):
-    t_name_value = T_SHEET.cell(i + 1, 3).value
-    t_threat_value = T_SHEET.cell(i + 1, T_MAX_COLUMN).value
-    if i + 1 == 1:
+    t_name_value = T_SHEET.cell(i + 1, 3).value  # name value
+    t_threat_value = T_SHEET.cell(i + 1, T_MAX_COLUMN).value  # threat value
+    if i + 1 == 1:  # skip the header
         pass
     elif t_flag == "":
         t_flag = t_name_value
@@ -84,19 +106,16 @@ for name in t_dic:
             i_tuple = (name, t, v)
             a_list.append(i_tuple)
 
-# for i in range(len(a_list)):
-    # output_sheet.cell(row=i+1, column=1, value=a_list[i][0])
-    # output_sheet.cell(row=i+1, column=2, value=a_list[i][1])
-    # output_sheet.cell(row=i+1, column=3, value=a_list[i][2])
 for t in asset_list:
     for i in range(asset_flag, len(a_list)):
         if t[0] == a_list[i][0]:
-            output_sheet.cell(row=i+1, column=1, value=a_list[i][0])
-            output_sheet.cell(row=i+1, column=2, value=t[1])
-            output_sheet.cell(row=i+1, column=3, value=a_list[i][1])
-            output_sheet.cell(row=i+1, column=4, value=a_list[i][2])
+            output_sheet.cell(row=i + 1, column=1, value=a_list[i][0])
+            output_sheet.cell(row=i + 1, column=2, value=t[1])
+            output_sheet.cell(row=i + 1, column=3, value=a_list[i][1])
+            output_sheet.cell(row=i + 1, column=4, value=a_list[i][2])
         else:
             asset_flag = i
             break
 
+sheet_format(output_sheet)
 output_wb.save('output2.xlsx')
