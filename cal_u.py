@@ -103,25 +103,25 @@ for i in range(T_MAX_ROW):
 # Parse Vulnerability Value
 for i in range(V_MAX_ROW):
     v_name_value = V_SHEET.cell(i + 1, 2).value
-    v_threat_value = V_SHEET.cell(i + 1, V_MAX_COLUMN).value
+    v_threat_value = V_SHEET.cell(i + 1, 5).value
     m_mitigate = M_SHEET.cell(i + 1, M_MAX_COLUMN).value
     if i + 1 == 1:
         pass
     elif v_name_value == None:
         v_name_value = v_flag
-        v_list.append(v_threat_value)
+        v_list.append((v_threat_value, m_mitigate))
         v_dic[v_name_value] = v_list
     else:
         v_flag = v_name_value
         v_list = []
-        v_list.append(v_threat_value)
+        v_list.append((v_threat_value, m_mitigate))
         v_dic[v_name_value] = v_list
 
 # integrate threat & vulnerability
 for name in t_dic:
     for t in t_dic[name]:
         for v in v_dic[name]:
-            i_tuple = (name, t, v)
+            i_tuple = (name, t, v[0], v[1])
             a_list.append(i_tuple)
 
 for t in asset_list:
@@ -131,6 +131,7 @@ for t in asset_list:
             output_sheet.cell(row=i + 1, column=2, value=t[1])
             output_sheet.cell(row=i + 1, column=3, value=a_list[i][1])
             output_sheet.cell(row=i + 1, column=4, value=a_list[i][2])
+            output_sheet.cell(row=i + 1, column=5, value=a_list[i][3])
         else:
             asset_flag = i
             break
