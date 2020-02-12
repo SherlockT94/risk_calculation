@@ -9,22 +9,31 @@ import openpyxl
 from openpyxl import Workbook
 from openpyxl.styles import PatternFill, Alignment, Font
 
+
 def get_arguments():
     """Parsing the arguments"""
     parser = argparse.ArgumentParser()
-    parser.add_argument("-s", "--source", dest="source", help="Set source file path for the script to parse.")
-    parser.add_argument("-o", "--output", dest="output", help="Set output file path.")
+    parser.add_argument("-s",
+                        "--source",
+                        dest="source",
+                        help="Set source file path for the script to parse.")
+    parser.add_argument("-o",
+                        "--output",
+                        dest="output",
+                        help="Set output file path.")
     options = parser.parse_args()
     return options
 
 
 def sheet_format(sheet):
     """Add header to the output sheet & set bold font, alignment, cell size, background color"""
-    header = ["资产名称", "资产赋值", "威胁等级", "脆弱性赋值"]
+    header = ["资产名称", "资产赋值", "威胁等级", "脆弱性赋值", "已有安全措施", "风险值"]
     sheet.column_dimensions["A"].width = 25
     sheet.column_dimensions["B"].width = 16
     sheet.column_dimensions["C"].width = 16
     sheet.column_dimensions["D"].width = 16
+    sheet.column_dimensions["E"].width = 16
+    sheet.column_dimensions["F"].width = 16
     sheet.row_dimensions[1].height = 20
     sheet.insert_rows(1)
     font = Font(bold=True)
@@ -32,13 +41,23 @@ def sheet_format(sheet):
                        start_color="D9D9D9",
                        end_color="D9D9D9")
     alignment = Alignment(horizontal="center", vertical="center")
-    for i in range(4):
+    for i in range(len(header)):
         sheet.cell(1, i + 1).value = header[i]
         sheet.cell(1, i + 1).font = font
         sheet.cell(1, i + 1).fill = fill
         sheet.cell(1, i + 1).alignment = alignment
 
 
+def calculate(sheet, index):
+    """calculate the risk value"""
+    if index == 1:
+        pass
+    else:
+        formula = f"=B{index}*SQRT(C{index}*D{index})*(5-E{index})"
+        sheet["F" + str(index-1)] = formula
+
+
+# get args
 options = get_arguments()
 # load a workbook -> .xlsx file
 wb = openpyxl.load_workbook(options.source, data_only=True)
@@ -135,6 +154,9 @@ for t in asset_list:
         else:
             asset_flag = i
             break
+
+for i in range(len(a_list) + 1):
+    calculate(output_sheet, i + 1)
 
 sheet_format(output_sheet)
 output_wb.save(options.output)
